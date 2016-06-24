@@ -1,58 +1,16 @@
 package com.visola.image.processing;
 
-import java.awt.Color;
-import java.awt.Point;
-import java.awt.image.BufferedImage;
-import java.util.HashSet;
-import java.util.Optional;
-import java.util.Set;
-import java.util.function.Function;
+import java.awt.image.ConvolveOp;
+import java.awt.image.Kernel;
 
 public class ImageUtils {
 
-  public static Set<Pixel> getPixelsAround(int x, int y, BufferedImage image) {
-    return getPixelsAround(x, y, image, p -> false);
-  }
+  private static float [] SOBEL_KERNEL_X_VALUES = { -2, 0, 2, -3, 0, 3, -2, 0, 2 };
+  private static Kernel SOBEL_KERNEL_X = new Kernel(3, 3, SOBEL_KERNEL_X_VALUES);
+  public static ConvolveOp SOBEL_CONVOL_X = new ConvolveOp(SOBEL_KERNEL_X, ConvolveOp.EDGE_NO_OP, null);
 
-  public static Set<Pixel> getPixelsAround(int x, int y, BufferedImage image, Function<Point, Boolean> shouldStop) {
-    Set<Pixel> pixels = new HashSet<>();
-    LOOPS: for (int h = y - 1; h <= y + 1; h++) {
-      for (int w = x - 1; w <= x + 1; w++) {
-        if (shouldStop.apply(new Point(w, h))) {
-          break LOOPS;
-        }
-
-        if (w == x && h == y) continue; // Don't count the point
-
-        // Avoid points outside the image
-        if (h < 0 || h >= image.getHeight()) continue;
-        if (w < 0 || w >= image.getWidth()) continue;
-
-        pixels.add(new Pixel(new Point(w, h), new Color(image.getRGB(w, h))));
-      }
-    }
-    return pixels;
-  }
-
-  public static Set<Pixel> getPixelsAroundAndBefore(int x, int y, BufferedImage image) {
-    return getPixelsAround(x, y, image, p -> p.x > x && p.y == y);
-  }
-
-  public static Optional<Pixel> findClosestColor(Pixel pixel, Set<Pixel> pixels, double threashold) {
-    double distance = Double.MAX_VALUE;
-    Pixel closest = null;
-    for (Pixel p : pixels) {
-      double newDistance = ColorUtils.distance(pixel.getColor(), p.getColor());
-      if (distance > newDistance) {
-        closest = p;
-        distance = newDistance;
-      }
-    }
-    if (distance <= threashold) {
-      return Optional.of(closest);
-    } else {
-      return Optional.empty();
-    }
-  }
+  private static float [] SOBEL_KERNEL_Y_VALUES = { -1, -2, -1, 0, 0, 0, 1, 2, 1 };
+  private static Kernel SOBEL_KERNEL_Y = new Kernel(3, 3, SOBEL_KERNEL_Y_VALUES);
+  public static ConvolveOp SOBEL_CONVOL_Y = new ConvolveOp(SOBEL_KERNEL_Y, ConvolveOp.EDGE_NO_OP, null);
 
 }
